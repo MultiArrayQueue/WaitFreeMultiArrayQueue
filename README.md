@@ -1,6 +1,6 @@
 # Wait-Free Multi-Array Queue
 
-This is the highest evolution of the Multi-Array Queues (after the [Java Queues](https://github.com/MultiArrayQueue/MultiArrayQueue)
+This is the "latest evolution" of the Multi-Array Queues (after the [Java Queues](https://github.com/MultiArrayQueue/MultiArrayQueue)
 and the [Lock-Free Queue](https://github.com/MultiArrayQueue/LockFreeMultiArrayQueue)):
 A Queue that is linearizable, lock-free, and in the steady state (i.e. no Queue extensions (anymore)) also wait-free and garbage-free.
 
@@ -8,7 +8,7 @@ The garbage-freedom in the steady state makes this Queue wait-free unconditional
 (that would disturb the wait-freedom) is involved in there.
 
 This work has been inspired by the [Kogan & Petrank Queue](https://csaws.cs.technion.ac.il/~erez/Papers/wfquque-ppopp.pdf)
-in the sense than the linearization operations themselves can be helped by other threads if the helpee has a phase number
+in the sense that the linearization operations themselves can be helped by other threads if the helpee has a phase number
 lower than (or equal to) the phase number of the helper. Other actions (that do not constitute linearization points)
 can be helped by other threads too. Metaphorically, the algorithms can be seen as a "big carousel" of linearization helping
 and helping to finish already linearized operations.
@@ -39,19 +39,19 @@ In long: The algorithms have first been designed and verified as a model for the
 (for computer-aided simulations and exhaustive verifications). The Spin model file is the primary source of information
 and comments on the algorithms as such.
 
-After that the [JavaScript Simulator](https://MultiArrayQueue.github.io/Simulator_WaitFreeMultiArrayQueue.html)
+After that, the [JavaScript Simulator](https://MultiArrayQueue.github.io/Simulator_WaitFreeMultiArrayQueue.html)
 has been developed (for teaching and visual/manual simulations and verifications).
 
-For a future "real" implementation similar choices exist as for the
+For a future "real" implementation, similar choices exist as for the
 [Lock-Free Queue](https://github.com/MultiArrayQueue/LockFreeMultiArrayQueue),
-with x86-64 assembly combined with C++ being presumably the most attractive option.
+with x86-64 assembly combined with C++ presumably being the most attractive option.
 
 ## More details
 
 The Wait-Free Multi-Array Queue is a linearizable multiple-writer multiple-reader lock-free FIFO Queue
 that is in the steady state (i.e. no Queue extensions (anymore)) also wait-free and garbage-free.
 
-The extension operations, however, involve the memory allocator which (most-probably) is not wait-free.
+The extension operations, however, involve the memory allocator which (most probably) is not wait-free.
 Further, more than one thread can consider extending the Queue.
 Each of these competing threads then prepares (allocates) memory for the new ring and tries to CAS it into the **rings** array.
 The memory of the winning thread goes into use, but the losing threads have to free the allocated memory again.
@@ -66,7 +66,7 @@ The "high half" carries the payload and metadata as in the [Lock-Free Queue](htt
 
 The "low half" carries the Thread-ID (index into the **state** array) and the phase number of the operation
 that operates on that array element. This information is necessary for the finishing steps that can be helped
-by different threads (in an extreme case the linearization and each helping step can be done by a different thread).
+by different threads (in an extreme case, the linearization and each helping step can be done by a different thread).
 
 It is actually the successful 128-bit CAS (CMPXCHG16B) into the "low half" that is the linearization operation.
 

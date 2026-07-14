@@ -528,6 +528,16 @@ enqueue_read_element_low :
                 assert(0 != ringsAllocMemory[CNT_ALLOWED_EXTENSIONS]);  // Queue full can happen only in the fully-extended state
                 assert(effectiveRound == (1 + elementLowRound));
 
+                // This is a candidate linearization point for "Queue is full", so the following assert must hold.
+                // This candidate LP however cannot be directly utilized, because here (unlike in the Lock-Free Queue)
+                // a thread is not solely responsible for own linearizations: Here that responsibility is shared,
+                // so if this candidate LP were directly utilized to return "Queue is full", a race could happen
+                // between thread(s) that see the Queue full and thread(s) which don't (that would attempt to indeed linearize
+                // the Enqueue). Instead, the "Queue is full" condition must be signalled (via the local isNowFullOrEmpty boolean)
+                // to the "central LP" (which is the CAS on element (low)).
+
+                assert(MAXIMUM_CAPACITY == (cntEnqueued - cntDequeued));
+
                 // Handling of Queue full is described in the Linearization section.
                 //
                 // Question: Is it safe to linearize (from the perspective whether the previous linearized operation is already finished)?
@@ -765,6 +775,16 @@ dequeue_read_element_low :
             {
                 assert(effectiveRound == (1 + elementLowRound));
 
+                // This is a candidate linearization point for "Queue is empty", so the following assert must hold.
+                // This candidate LP however cannot be directly utilized, because here (unlike in the Lock-Free Queue)
+                // a thread is not solely responsible for own linearizations: Here that responsibility is shared,
+                // so if this candidate LP were directly utilized to return "Queue is empty", a race could happen
+                // between thread(s) that see the Queue empty and thread(s) which don't (that would attempt to indeed linearize
+                // the Dequeue). Instead, the "Queue is empty" condition must be signalled (via the local isNowFullOrEmpty boolean)
+                // to the "central LP" (which is the CAS on element (low)).
+
+                assert(cntEnqueued == cntDequeued);
+
                 // Handling of Queue empty is described in the Linearization section.
                 //
                 // Question: Is it safe to linearize (from the perspective whether the previous linearized operation is already finished)?
@@ -777,6 +797,9 @@ dequeue_read_element_low :
             }
             :: else ->  // there was no operation yet on that element (i.e. the element is clean): Queue is empty
             {
+                // (same remark about candidate LP for "Queue is empty" as above)
+                assert(cntEnqueued == cntDequeued);
+
                 // Handling of Queue empty is described in the Linearization section.
                 //
                 // Question: Is it safe to linearize (from the perspective whether the previous linearized operation is already finished)?
